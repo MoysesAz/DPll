@@ -1,0 +1,37 @@
+    def write_dimacs(matrix, file_name):
+        n = len(matrix)
+        clauses = []
+        
+        # Cada célula contém pelo menos um número
+        for i in range(n):
+            for j in range(n):
+                if matrix[i][j] == 0:
+                    clauses.append([n * n * i + n * j + k + 1 for k in range(n)])
+                else:
+                    clauses.append([n * n * i + n * j + matrix[i][j]])
+        
+        # Cada número ocorre no máximo uma vez em cada linha
+        for i in range(n):
+            for k in range(n):
+                for j1, j2 in itertools.combinations(range(n), 2):
+                    clauses.append([-(n * n * i + n * j1 + k + 1), -(n * n * i + n * j2 + k + 1)])
+        
+        # Cada número ocorre no máximo uma vez em cada coluna
+        for j in range(n):
+            for k in range(n):
+                for i1, i2 in itertools.combinations(range(n), 2):
+                    clauses.append([-(n * n * i1 + n * j + k + 1), -(n * n * i2 + n * j + k + 1)])
+        
+        # Cada número ocorre no máximo uma vez na diagonal principal
+        for k in range(n):
+            for i1, i2 in itertools.combinations(range(n), 2):
+                clauses.append([-(n * n * i1 + n * i1 + k + 1), -(n * n * i2 + n * i2 + k + 1)])
+        
+        # Cada número ocorre no máximo uma vez na diagonal secundária
+        for k in range(n):
+            for i1, i2 in itertools.combinations(range(n), 2):
+                clauses.append([-(n * n * i1 + n * (n - 1 - i1) + k + 1), -(n * n * i2 + n * (n - 1 - i2) + k + 1)])
+        
+        with open(file_name, 'w') as f:
+            f.write(f'p cnf {n*n*n} {len(clauses)}\n')
+            f.write('\n'.join([' '.join(map(str, clause)) + ' 0' for clause in clauses]))
